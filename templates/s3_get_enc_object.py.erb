@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+
+import argparse
+import base64
+import json
+import os
+import subprocess
+
+import boto3
+from Crypto.Cipher import AES
+
+parser = argparse.ArgumentParser(description='Download and decrypt object from S3.')
+parser.add_argument('--bucket', type=str, help='Bucket name')
+parser.add_argument('--key', type=str, help='Object key to get')
+parser.add_argument('--file', type=str, help='File path')
+args = parser.parse_args()
+bucket = args.bucket
+key = args.key
+outfile = args.file
+temp_file = outfile + '.enc'
+
+
+def source_ec2_user_data():
+    source_cmd = ['bash', '-c', 'source /etc/default/ec2-user-data && env']
+
+    proc = subprocess.Popen(source_cmd, stdout=subprocess.PIPE)
+
+    for line in proc.stdout:
+        (key, _, value) = line.partition("=")
+        os.environ[key] = value.rstrip('\n')
+
+    proc.communicate()
+
+
+# decrypt_file method from: http://eli.thegreenplace.net/2010/06/25/aes-encryption-of-files-in-python-with-pycrypto
+def decrypt_file(enc_key, in_filename, iv, contents_size, out_filename, chunksize=16 * 1024):
+    with open(in_filename, 'rb') as infile:
+        aes = AES.new(enc_key, AES.MODE_CBC, iv)
+        with open(out_filename, 'wb') as output_file:
+            while True:
+                chunk = infile.read(chunksize)
+                if len(chunk) == 0:
+                    break
+                output_file.write(aes.decrypt(chunk))
+            output_file.truncate(contents_size)
+
+source_ec2_user_data()
+
+region = os.environ['EC2_REGION']
+
+if region is None:
+    print("EC2_REGION not set!")
+    exit(1)
+
+s3 = boto3.client('s3', region_name=region)
+kms = boto3.client('kms', region_name=region)
+
+# download encrypted object from S3
+encrypted = s3.get_object(Bucket=bucket, Key=key)
+
+
+# get object metadata from encrypted object and decode base64 strings
+metadata = encrypted['Metadata']
+envelope_key = base64.b64decode(metadata['x-amz-key-v2'])
+envelope_iv = base64.b64decode(metadata['x-amz-iv'])
+encrypt_ctx = json.loads(metadata['x-amz-matdesc'])
+original_size = metadata['x-amz-unencrypted-content-length']
+
+# use AWS KMS to decrypt envelop key (envelope key is used to encrypt object data)
+envelope_key_decrypt = kms.decrypt(CiphertextBlob=envelope_key, EncryptionContext=encrypt_ctx)
+
+# download encrypted object directly to file (could also just write existing encrypted object to file)
+s3.download_file(bucket, key, temp_file)
+
+# decrypt file
+decrypt_file(envelope_key_decrypt['Plaintext'], temp_file, envelope_iv, int(original_size), outfile)
+os.remove(temp_file)

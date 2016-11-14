@@ -1,0 +1,185 @@
+#
+# Matches on response codes from nginx's access log.
+#
+LoadPlugin tail
+
+<Plugin "tail">
+    <File "<%= @access_log %>">
+        Instance "cerberus"
+        Interval 1
+        <Match>
+            Regex ".*"
+            DSType CounterInc
+            Type "counter"
+            Instance "http_request"
+        </Match>
+        <Match>
+            Regex "response_code\=\"[123][0-9][0-9]\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_request_success"
+        </Match>
+        <Match>
+            Regex "response_code\=\"[45][0-9][0-9]\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_request_error"
+        </Match>
+        <Match>
+            Regex "response_code\=\"1[0-9][0-9]\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_1xx"
+        </Match>
+        <Match>
+            Regex "response_code\=\"2[0-9][0-9]\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_2xx"
+        </Match>
+        <Match>
+            Regex "response_code\=\"3[0-9][0-9]\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_3xx"
+        </Match>
+        <Match>
+            Regex "response_code\=\"4[0-9][0-9]\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_4xx"
+        </Match>
+        <Match>
+            Regex "response_code\=\"5[0-9][0-9]\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_5xx"
+        </Match>
+        <Match>
+            Regex "response_code\=\"100\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_100"
+        </Match>
+        <Match>
+            Regex "response_code\=\"101\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_101"
+        </Match>
+        <Match>
+            Regex "response_code\=\"200\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_200"
+        </Match>
+        <Match>
+            Regex "response_code\=\"201\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_201"
+        </Match>
+        <Match>
+            Regex "response_code\=\"202\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_202"
+        </Match>
+        <Match>
+            Regex "response_code\=\"204\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_204"
+        </Match>
+        <Match>
+            Regex "response_code\=\"301\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_301"
+        </Match>
+        <Match>
+            Regex "response_code\=\"302\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_302"
+        </Match>
+        <Match>
+            Regex "response_code\=\"303\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_303"
+        </Match>
+        <Match>
+            Regex "response_code\=\"304\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_304"
+        </Match>
+        <Match>
+            Regex "response_code\=\"307\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_307"
+        </Match>
+        <Match>
+            Regex "response_code\=\"400\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_400"
+        </Match>
+        <Match>
+            Regex "response_code\=\"401\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_401"
+        </Match>
+        <Match>
+            Regex "response_code\=\"403\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_403"
+        </Match>
+        <Match>
+            Regex "response_code\=\"404\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_404"
+        </Match>
+        <Match>
+            Regex "response_code\=\"415\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_415"
+        </Match>
+        <Match>
+            Regex "response_code\=\"500\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_500"
+        </Match>
+        <Match>
+            Regex "response_code\=\"501\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_501"
+        </Match>
+        <Match>
+            Regex "response_code\=\"502\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_502"
+        </Match>
+        <Match>
+            Regex "response_code\=\"503\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_503"
+        </Match>
+        <Match>
+            Regex "response_code\=\"504\""
+            DSType CounterInc
+            Type "counter"
+            Instance "http_504"
+        </Match>
+    </File>
+</Plugin>

@@ -1,0 +1,5 @@
+modules/
+spec/fixtures/modules/
+*.lock
+*.iml
+.idea
