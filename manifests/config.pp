@@ -17,6 +17,15 @@ class gateway::config inherits gateway {
         content => template("gateway/s3_get_enc_object.py.erb"),
     }
 
+    file { '/usr/local/bin/gateway_dl_config':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0755',
+        content => template("gateway/gateway_dl_config.erb"),
+        require => Class['gateway::install'],
+    }
+
     file { '/etc/init/gatway_dl_config.conf':
         ensure  => file,
         owner   => 'root',

@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+####################################################################################
+#
+# A simple shell script that utilizes the AWS CLI to fetch encrypted configuration
+# from S3 and decrypts it using KMS and places it in the appropriate folder
+#
+####################################################################################
+
+. /etc/default/ec2-user-data
+
+if [ -z "${CONFIG_S3_BUCKET}" ]; then
+echo "ERROR: CONFIG_S3_BUCKET variable is empty and required!"
+exit 1
+fi
+
+S3_BUCKET=${CONFIG_S3_BUCKET}
+PATH_PREFIX="data/gateway"
+CONFIG_DIR="/etc/nginx"
+SSL_DIR="/etc/ssl"
+
+FILES=( "${PATH_PREFIX}/nginx.conf:${CONFIG_DIR}/nginx.conf"
+"${PATH_PREFIX}/gateway.conf:${CONFIG_DIR}/sites-available/default"
+"${PATH_PREFIX}/gateway-cert.pem:${SSL_DIR}/gateway.pem"
+"${PATH_PREFIX}/gateway-key.pem:${SSL_DIR}/gateway.key" )
+
+for fileset in "${FILES[@]}" ; do
+S3_PATH=${fileset%%:*}
+DEST_PATH=${fileset#*:}
+
+s3_get_enc_object.py --bucket ${S3_BUCKET} --key ${S3_PATH} --file ${DEST_PATH}
+done
