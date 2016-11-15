@@ -1,6 +1,6 @@
 description "Copy ec2-user-data to /etc/default/"
 
-start on filesystem
+start on (started ec2_user_data and filesystem)
 
 script
     exec bash -c '/usr/local/bin/gateway_dl_config'
