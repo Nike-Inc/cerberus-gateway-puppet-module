@@ -26,7 +26,7 @@ class gateway::config inherits gateway {
         require => Class['gateway::install'],
     }
 
-    file { '/etc/init/gatway_dl_config.conf':
+    file { '/etc/init/gateway_dl_config.conf':
         ensure  => file,
         owner   => 'root',
         group   => 'root',
