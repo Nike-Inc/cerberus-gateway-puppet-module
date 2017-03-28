@@ -2,10 +2,10 @@ description "Copy ec2-user-data to /etc/default/"
 
 start on started ec2_user_data and filesystem
 
+console log
+
 script
     echo "Preparing gateway config"
-    sleep 5
-    echo "Fetching gateway config"
     /usr/local/bin/gateway_dl_config
     echo "Restarting nginx"
     service nginx restart

@@ -9,6 +9,16 @@ IFS=$'\n\t'
 #
 ####################################################################################
 
+#Make sure all required info are present in ec2-user-data.
+
+echo "Making sure ec2-user-data contains required definitions (Wait until it becomes available)"
+EC2File='/etc/default/ec2-user-data'
+while ! grep -q CONFIG_S3_BUCKET "$EC2File"; do
+  echo -n "."
+  sleep 1
+done
+echo " :Done"
+
 . /etc/default/ec2-user-data
 
 if [ -z "${CONFIG_S3_BUCKET}" ]; then
