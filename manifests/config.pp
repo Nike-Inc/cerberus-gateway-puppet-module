@@ -42,4 +42,14 @@ class gateway::config inherits gateway {
         mode    => '0755',
         require => Class['gateway::install'],
     }
+
+    file { '/etc/init/gateway.conf':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => template("gateway/gateway.conf.erb"),
+        require => Class['gateway::install'],
+    }
+
 }

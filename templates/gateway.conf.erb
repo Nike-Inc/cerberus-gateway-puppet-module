@@ -1,0 +1,46 @@
+description "Gateway Service"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+setuid <%= @consul_user %>
+setgid <%= @consul_group %>
+
+respawn
+# This is to avoid Upstart re-spawning the process
+normal exit 0 INT
+# stop will not mark node as failed but left
+kill signal INT
+
+console log
+
+script
+    echo "Gateway startup completed"
+end script
+
+
+post-start script
+
+  echo "Gateway: performaing post startup steps"
+  . /etc/default/ec2-user-data
+
+  URL="http://169.254.169.254/latest/"
+  ID=$(curl -s $URL/meta-data/instance-id)
+  STACK_ID=$(aws ec2 describe-tags --region ${EC2_REGION} --filter Name=resource-id,Values=${ID} | jq -r .Tags | jq '.[] | select(.Key=="aws:cloudformation:stack-id")' | jq ".Value")
+
+  echo "Instance ID : ${ID}"
+  echo "Stack ID : ${STACK_ID}"
+
+  while ! curl -s -k https://localhost/sys/health | grep -q 'Gateway is Healthy' ;
+  do
+   echo 'Waiting for gateway services to come alive'
+   sleep 1
+  done
+  echo 'Gateway services are healthy'
+
+  # Single to AWS that we are up
+  echo 'Sending Gateway CF signal'
+  aws --region ${EC2_REGION} cloudformation signal-resource --logical-resource-id GatewayAutoScalingGroup --stack-name $(echo "$STACK_ID" | sed -e 's/^"//' -e 's/"$//') --status SUCCESS --unique-id ${ID}
+  echo 'Completed'
+
+end script
