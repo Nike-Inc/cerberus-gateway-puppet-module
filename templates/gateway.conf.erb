@@ -1,12 +1,22 @@
 description "Gateway Service"
 
-start on started gateway_dl_config and started ec2_user_data
+start on started gateway_dl_config and stopped ec2_user_data
 
 console log
 
 script
 
-  echo "Gateway: performaing post startup steps"
+  echo "Gateway: performaing startup steps"
+
+  #Make sure all required info are present in ec2-user-data.
+  echo "Making sure ec2-user-data contains required definitions (Wait until it becomes available)"
+  EC2File='/etc/default/ec2-user-data'
+  while ! grep -q EC2_REGION "$EC2File"; do
+    echo -n "."
+    sleep 1
+  done
+  echo " :Done"
+
   . /etc/default/ec2-user-data
 
   URL="http://169.254.169.254/latest/"
