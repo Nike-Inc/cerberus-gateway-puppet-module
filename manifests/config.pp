@@ -10,6 +10,11 @@ class gateway::config inherits gateway {
         provider => 'pip',
     }
 
+    package { 'ensure-jq-installed':
+        name    => 'jq',
+        ensure  => installed,
+    }
+
     file { '/usr/local/bin/s3_get_enc_object.py':
         owner   => 'root',
         group   => 'root',
