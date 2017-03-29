@@ -1,8 +1,13 @@
 description "Copy ec2-user-data to /etc/default/"
 
-start on (started ec2_user_data and filesystem)
+start on started ec2_user_data and filesystem
+
+console log
 
 script
-    exec bash -c '/usr/local/bin/gateway_dl_config'
+    echo "Preparing gateway config"
+    /usr/local/bin/gateway_dl_config
+    echo "Restarting nginx"
     service nginx restart
+    echo "Completed"
 end script

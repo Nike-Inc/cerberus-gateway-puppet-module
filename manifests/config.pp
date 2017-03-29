@@ -10,6 +10,11 @@ class gateway::config inherits gateway {
         provider => 'pip',
     }
 
+    package { 'ensure-jq-installed':
+        name    => 'jq',
+        ensure  => installed,
+    }
+
     file { '/usr/local/bin/s3_get_enc_object.py':
         owner   => 'root',
         group   => 'root',
@@ -26,7 +31,7 @@ class gateway::config inherits gateway {
         require => Class['gateway::install'],
     }
 
-    file { '/etc/init/gatway_dl_config.conf':
+    file { '/etc/init/gateway_dl_config.conf':
         ensure  => file,
         owner   => 'root',
         group   => 'root',
@@ -42,4 +47,14 @@ class gateway::config inherits gateway {
         mode    => '0755',
         require => Class['gateway::install'],
     }
+
+    file { '/etc/init/gateway.conf':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => template("gateway/gateway.conf.erb"),
+        require => Class['gateway::install'],
+    }
+
 }
