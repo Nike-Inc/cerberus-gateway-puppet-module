@@ -26,7 +26,7 @@ script
   echo "Instance ID : ${ID}"
   echo "Stack ID : ${STACK_ID}"
 
-  while ! curl -s -k https://localhost/sys/health | grep -q 'Gateway is Healthy' ;
+  while ! curl -s -k -o /dev/null -I -w "%{http_code}" https://localhost/sys/health | grep -q '200' ;
   do
    echo 'Waiting for gateway services to come alive'
    sleep 1
