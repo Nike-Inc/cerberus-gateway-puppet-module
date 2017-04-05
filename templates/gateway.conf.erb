@@ -4,6 +4,8 @@ start on started gateway_dl_config and stopped ec2_user_data
 
 console log
 
+limit nofile <%= @gateway_limit_nofile %> <%= @gateway_limit_nofile %>
+
 script
 
   echo "Gateway: performaing startup steps"
