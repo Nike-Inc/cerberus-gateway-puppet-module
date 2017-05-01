@@ -23,9 +23,25 @@ script
 
   URL="http://169.254.169.254/latest/"
   ID=$(curl -s $URL/meta-data/instance-id)
+  echo "Instance ID : ${ID}"
+
+  EC2_AVAIL_ZONE=`curl -s $URL/meta-data/placement/availability-zone`
+  EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed -e 's:\([0-9][0-9]*\)[a-z]*\$:\\1:'`"
+  echo "EC2_AVAIL_ZONE : ${EC2_AVAIL_ZONE}"
+  echo "EC2_REGION : ${EC2_REGION}"
+
   STACK_ID=$(aws ec2 describe-tags --region ${EC2_REGION} --filter Name=resource-id,Values=${ID} | jq -r .Tags | jq '.[] | select(.Key=="aws:cloudformation:stack-id")' | jq ".Value")
 
-  echo "Instance ID : ${ID}"
+  # Tags may not be available for use with newly launched instances. Eventhough its rare, it happens.
+  # We have seen it 1 out of 6 times. Make sure we got stack id.
+
+  echo "Check and wait while we have STACK_ID from AWS instance tags"
+  while [ -z $STACK_ID ]; do
+    echo -n "."
+    sleep 1
+    STACK_ID=$(aws ec2 describe-tags --region ${EC2_REGION} --filter Name=resource-id,Values=${ID} | jq -r .Tags | jq '.[] | select(.Key=="aws:cloudformation:stack-id")' | jq ".Value")
+  done
+  echo '*'
   echo "Stack ID : ${STACK_ID}"
 
   while ! curl -s -k -o /dev/null -I -w "%{http_code}" https://localhost/sys/health | grep -q '200' ;
