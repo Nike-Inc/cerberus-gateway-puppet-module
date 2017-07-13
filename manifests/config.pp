@@ -57,4 +57,13 @@ class gateway::config inherits gateway {
         require => Class['gateway::install'],
     }
 
+    file { '/etc/init/nginx.override':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => template("gateway/nginx.override.erb"),
+        require => Class['gateway::install'],
+    }
+
 }
